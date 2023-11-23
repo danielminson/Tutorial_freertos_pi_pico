@@ -95,6 +95,30 @@ ou
 
 1. crie uma pasta “build” dentro da pasta “pico_examples” 
 
+
+
+Rode o comando: 
+`cmake ..`
+
+Agora sempre que você quiser compilar um arquivo, você precisa ir na sua pasta correspondente dentro da pasta “build” e ai rodar o comando “make” no terminal. 
+
+!!! note 
+    o arquivo CMakeLists.txt na raiz da pasta de exemplos, precisa ser atualizado para adicionar pastas para serem compiladas, por exemplo com a pasta “free_rtos”:
+
+    `add_subdirectory(free_rtos)`
+
+
+# **Como subir para a placa raspiberry pi pico?**
+
+### Forma 1: 
+copiar o arquivo com extensao .uf2 para dentro do armazenamento da pico.
+
+Obs: a placa precisa estar em modo de download. Para isso, conecte a placa com o computador segurando o botao de boot.
+
+
+
+# **RTOS**
+
 ----------------------------------------------
 
 !!! info 
