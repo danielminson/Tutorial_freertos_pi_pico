@@ -162,6 +162,8 @@ Supondo que vc queira usar a porta serial para prints ou coisas semelhantes:
 pico_enable_stdio_usb(hello_usb 1)
 pico_enable_stdio_uart(hello_usb 0)
 ```
+
+
 ----------------------------------------------
 
 !!! info 
