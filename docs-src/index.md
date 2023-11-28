@@ -119,6 +119,49 @@ Obs: a placa precisa estar em modo de download. Para isso, conecte a placa com o
 
 # **RTOS**
 
+
+# **Arquivo CMakeLists**
+!!! Cuidado 
+    CMakeLists.txt precisa ser alterado sempre que você faz um novo projeto.
+
+
+Supondo um arquivo “free_rtos“, fica assim:
+```
+cmake_minimum_required(VERSION 3.13)
+
+# Pull in SDK (must be before project)
+include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)
+
+# Pull in FreeRTOS
+include($ENV{FREERTOS_KERNEL_PATH}/portable/ThirdParty/GCC/RP2040/FreeRTOS_Kernel_import.cmake)
+
+project(app C CXX ASM)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
+
+# Initialize the SDK
+pico_sdk_init()
+
+add_executable(free_rtos main.c)
+
+target_include_directories(free_rtos PRIVATE ${CMAKE_CURRENT_LIST_DIR})
+ 
+# pull in common dependencies
+target_link_libraries(free_rtos pico_stdlib FreeRTOS-Kernel FreeRTOS-Kernel-Heap4)
+
+# create map/bin/hex/uf2 file etc.
+pico_add_extra_outputs(free_rtos)
+```
+
+
+cara
+
+Supondo que vc queira usar a porta serial para prints ou coisas semelhantes:
+```
+# enable usb output, disable uart output
+pico_enable_stdio_usb(hello_usb 1)
+pico_enable_stdio_uart(hello_usb 0)
+```
 ----------------------------------------------
 
 !!! info 
@@ -157,6 +200,7 @@ Vocês podem usar tudo que já sabem de markdown mais alguns recursos:
     
     oi!
     ```
+
     
 - **Esse é um texto em destaque**
 - ==Pode fazer isso também==
