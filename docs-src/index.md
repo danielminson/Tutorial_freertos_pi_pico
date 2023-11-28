@@ -93,14 +93,14 @@ ou
 
 `gedit .bashrc e ai definir PICO_SDK_PATH=/media/soc/rtos_pico_infra/pico-sdk`
 
-1. crie uma pasta “build” dentro da pasta “pico_examples” 
+1. crie uma pasta “build” dentro da pasta “pico_examples” e mude para esse diretorio
 
 
 
-Rode o comando: 
+2. Rode o comando para realizar a criação de todas as pastas de compilação de exemplo: 
 `cmake ..`
 
-Agora sempre que você quiser compilar um arquivo, você precisa ir na sua pasta correspondente dentro da pasta “build” e ai rodar o comando “make” no terminal. 
+Agora sempre que você quiser compilar um programa, você precisa ir na sua pasta correspondente dentro da pasta “build” e ai rodar o comando “make” no terminal. Caso você altere algum arquivo CmakeList ou semelhante de algum projeto, o comando cmake precisa ser refeito. As vezes é necessário apagar todos os componentes da pasta build.
 
 !!! note 
     o arquivo CMakeLists.txt na raiz da pasta de exemplos, precisa ser atualizado para adicionar pastas para serem compiladas, por exemplo com a pasta “free_rtos”:
@@ -118,6 +118,18 @@ Obs: a placa precisa estar em modo de download. Para isso, conecte a placa com o
 
 
 # **RTOS**
+Existe um [GitHub](https://github.com/TechieLew/Using-FreeRTOS-with-the-Raspberry-Pi-Pico/tree/main) onde há 2 arquivos imprescindíveis para colocar na pasta que vc for criar programas com freeRTOS (incluindo a biblioteca). Não esquecer de colocar a pasta no arquivo CMakeLists.txt na raiz da pasta onde estao os seus projetos.
+
+### Necessário clonar o Kernel do FreeRTOS na sua pasta principal.
+Para isso rode o comando: `git clone -b smp https://github.com/FreeRTOS/FreeRTOS-Kernel --recurse-submodules`
+
+[Referência](https://embeddedcomputing.com/technology/open-source/linux-freertos-related/using-freertos-with-the-raspberry-pi-pico)
+
+`export FREERTOS_KERNEL_PATH=/media/soc/rtos_pico_infra/freertos_pico/FreeRTOS-Kernel`
+
+ou 
+
+`gedit .bashrc e ai definir export FREERTOS_KERNEL_PATH=/media/soc/rtos_pico_infra/freertos_pico/FreeRTOS-Kernel`
 
 
 # **Arquivo CMakeLists**
@@ -125,7 +137,7 @@ Obs: a placa precisa estar em modo de download. Para isso, conecte a placa com o
     CMakeLists.txt precisa ser alterado sempre que você faz um novo projeto.
 
 
-Supondo um arquivo “free_rtos“, fica assim:
+Supondo um arquivo CMakeLists.txt para o projeto “free_rtos“, fica assim:
 ```
 cmake_minimum_required(VERSION 3.13)
 
@@ -152,9 +164,6 @@ target_link_libraries(free_rtos pico_stdlib FreeRTOS-Kernel FreeRTOS-Kernel-Heap
 # create map/bin/hex/uf2 file etc.
 pico_add_extra_outputs(free_rtos)
 ```
-
-
-cara
 
 Supondo que vc queira usar a porta serial para prints ou coisas semelhantes:
 ```
