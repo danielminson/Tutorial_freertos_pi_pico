@@ -1,4 +1,4 @@
-# Coloque aqui o nome do tutorial de vocês
+# Instalando infra necessária para usar FreeRTOS com Raspberry Pi Pico W e exemplo com sensor ultrassônico
 
 - **Alunes:** Daniel Minson Pucciariello
 - **Curso:** Engenharia da Computação
@@ -12,7 +12,7 @@ Para seguir esse tutorial é necessário:
 
 - **Hardware:** Raspberry Pi PICO
 - **Softwares:** FreeRTOS
-- **Documentos:** [DE10-Standard_User_manual.pdf](https://github.com/Insper/DE10-Standard-v.1.3.0-SystemCD/tree/master/Manual)
+- **Documentos:** [Getting Starter with Pico Development](https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf)
 
 ## Motivação
 Como engenheiro recém-formado, compartilho um tutorial prático sobre programar a Raspberry Pi Pico com FreeRTOS. Este recurso abrangente explora desde a configuração inicial até a implementação de tarefas concorrentes, capacitando os desenvolvedores a criar projetos eficientes e inovadores. 
@@ -40,13 +40,13 @@ Descubra as vastas possibilidades da programação embarcada com FreeRTOS na Ras
 6. teste com: `cmake --version`
 
 
-**referência:** [Askubuntu](https://askubuntu.com/questions/829310/how-to-upgrade-cmake-in-ubuntu)
+**Referência:** [Askubuntu](https://askubuntu.com/questions/829310/how-to-upgrade-cmake-in-ubuntu)
 
 
 !!! note 
-    É necessário ter um módulo que chama raspi-config, que pode ser que não esteja instalado. 
+    É necessário ter um módulo que chama **raspi-config**, que pode ser que não esteja instalado. 
 
-    rode “sudo raspi-config” para ver se está instalado, caso nao esteja, rode o seguinte script para instalacao (presente nesse [github](https://github.com/EmilGus/install_raspi-config))
+    rode `sudo raspi-config` para ver se está instalado, caso nao esteja, rode o seguinte script para instalacao (presente nesse [github](https://github.com/EmilGus/install_raspi-config))
 
 ## Como instalar um raspi-config?¶
 
@@ -54,7 +54,7 @@ Descubra as vastas possibilidades da programação embarcada com FreeRTOS na Ras
 2. chmod +x install.sh
 3. ./install.sh 
 
-**referência**: [Rootsaid](https://rootsaid.com/raspi-config-install-setup-in-any-raspberry-pi-linux-os/)
+**Referência**: [Rootsaid](https://rootsaid.com/raspi-config-install-setup-in-any-raspberry-pi-linux-os/)
 
 ## Libusb
 - muito provavelmente você vai ter que instalar essa biblioteca:
@@ -62,27 +62,22 @@ Descubra as vastas possibilidades da programação embarcada com FreeRTOS na Ras
 `sudo apt-get install libusb-1.0-0-dev`
 
 !!! warning
-    obs: se aparecer um erro, vc precisa apagar a pasta onde vc estava rodando o setup antes de rodar pico_setup.sh novamente
+    obs: se aparecer um erro durante o setup do arquivo `pico_setup.sh`, vc precisa apagar a pasta onde vc estava rodando o setup antes de rodar pico_setup.sh novamente.
 
-## instalar toolchain:
+## Como instalar toolchain:
 
 sudo apt update
 sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential
 
-## instalar sdk e exemplos:
-
+## Como instalar sdk e exemplos:
 1. git clone https://github.com/raspberrypi/pico-sdk.git --branch master
-
 2. cd pico-sdk
-
 3. git submodule update --init
-
 4. cd ..
-
 5. git clone https://github.com/raspberrypi/pico-examples.git --branch master
 
-# **Compilação**
-Para realizar a compilaçao, o sdk precisa estar com o export path configurado.
+# Compilação
+Para realizar a compilação, o sdk precisa estar com o export path configurado.
 
 Isso pode ser feito configurando uma variavel no bash_rc ou de forma manual todas as vezes que você abrir o terminal.
 
@@ -108,19 +103,19 @@ Agora sempre que você quiser compilar um programa, você precisa ir na sua past
     `add_subdirectory(free_rtos)`
 
 
-# **Como subir para a placa raspiberry pi pico?**
+# **Como subir um código para a placa raspiberry pi pico?**
 
 ### Forma 1: 
-copiar o arquivo com extensao .uf2 para dentro do armazenamento da pico.
+Copiar o arquivo com extensao .uf2 para dentro do armazenamento da pico.
 
 Obs: a placa precisa estar em modo de download. Para isso, conecte a placa com o computador segurando o botao de boot.
 
 
 
-# **RTOS**
+# RTOS
 Existe um [GitHub](https://github.com/TechieLew/Using-FreeRTOS-with-the-Raspberry-Pi-Pico/tree/main) onde há 2 arquivos imprescindíveis para colocar na pasta que vc for criar programas com freeRTOS (incluindo a biblioteca). Não esquecer de colocar a pasta no arquivo CMakeLists.txt na raiz da pasta onde estao os seus projetos.
 
-### Necessário clonar o Kernel do FreeRTOS na sua pasta principal.
+### Necessário clonar o Kernel do FreeRTOS na sua pasta principal de infra.
 Para isso rode o comando: `git clone -b smp https://github.com/FreeRTOS/FreeRTOS-Kernel --recurse-submodules`
 
 [Referência](https://embeddedcomputing.com/technology/open-source/linux-freertos-related/using-freertos-with-the-raspberry-pi-pico)
@@ -138,7 +133,7 @@ ou
 
 
 Supondo um arquivo CMakeLists.txt para o projeto “free_rtos“, fica assim:
-```
+```c
 cmake_minimum_required(VERSION 3.13)
 
 # Pull in SDK (must be before project)
@@ -173,94 +168,122 @@ pico_enable_stdio_uart(hello_usb 0)
 ```
 
 
-----------------------------------------------
-
-!!! info 
-    Essas duas partes são obrigatórias no tutorial:
-    
-    - Nome de vocês
-    - Começando
-    - Motivação
-
-## Recursos Markdown
-
-Vocês podem usar tudo que já sabem de markdown mais alguns recursos:
-
-!!! note 
-    Bloco de destaque de texto, pode ser:
-    
-    - note, example, warning, info, tip, danger
-    
-    
-??? info 
-    Também da para esconder o texto, usar para coisas
-    muito grandes, ou exemplos de códigos.
-    
-    ```txt
-    ...
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    oi!
-    ```
-
-    
-- **Esse é um texto em destaque**
-- ==Pode fazer isso também==
-
-Usar emojis da lista:
-
-:two_hearts: - https://github.com/caiyongji/emoji-list
+# **Exemplo de fila no FreeRTOS - HCSR04**
+O código abaixo é um programa em C projetado para medir a distância usando um sensor de ultrassom HC-SR04 em um Raspberry Pi Pico. A aplicação utiliza o FreeRTOS, um sistema operacional em tempo real, para gerenciar tarefas concorrentes.
 
 
-```c
-// da para colocar códigos
- void main (void) {}
-```
+Esquemático:
+![](hc-sr04_schematic.webp)
 
-É legal usar abas para coisas desse tipo:
-    
+Código em C:
 === "C"
-
     ``` c
     #include <stdio.h>
+    #include <stdint.h>
+    #include "pico/stdlib.h"
+    #include "pico/time.h"
+    #include "hardware/gpio.h"
+    #include "FreeRTOS.h"
+    #include "task.h"
+    #include "queue.h"
 
-    int main(void) {
-      printf("Hello world!\n");
-      return 0;
+    #define TRIGGER_PIN 18
+    #define ECHO_PIN 19
+
+    QueueHandle_t distanceQueue;
+
+    void echoInterrupt(uint gpio, uint32_t events);
+
+    void triggerSensor();
+
+    void distanceTask(void *pvParameters);
+
+    int main() {
+        stdio_init_all();
+        sleep_ms(10000);
+        printf("Está rodando\n");
+        sleep_ms(1000);
+
+        // Initialize HC-SR04 pins and FreeRTOS queue
+        gpio_init(TRIGGER_PIN);
+        gpio_set_dir(TRIGGER_PIN, GPIO_OUT);
+        gpio_init(ECHO_PIN);
+        gpio_set_dir(ECHO_PIN, GPIO_IN);
+
+        distanceQueue = xQueueCreate(5, sizeof(uint32_t));
+        if (distanceQueue == NULL) {
+            printf("Error creating queue.\n");
+            // Handle the error
+        }
+
+        // Set up interrupt for both rising and falling edges
+        gpio_set_irq_enabled_with_callback(ECHO_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &echoInterrupt);
+
+        // Create the distance processing task
+        xTaskCreate(distanceTask, "DistanceTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
+
+        // Start FreeRTOS scheduler
+        vTaskStartScheduler();
+
+        return 0;
+    }
+
+    void echoInterrupt(uint gpio, uint32_t events) {
+        static uint32_t startTime;
+        static uint32_t endTime;
+
+        uint32_t time = time_us_32();
+
+        if (events & GPIO_IRQ_EDGE_RISE) {
+            startTime = time;
+            // printf("Rising Edge Interrupt\n");
+        } else if (events & GPIO_IRQ_EDGE_FALL) {
+            endTime = time;
+            // Calculate delta T
+            uint32_t deltaTime = endTime - startTime;
+
+            // Send delta T to the queue
+            xQueueSendFromISR(distanceQueue, &deltaTime, NULL);
+
+        }
+
+        // Re-enable the interrupt for both rising and falling edges
+        gpio_acknowledge_irq(ECHO_PIN, events);
+        gpio_set_irq_enabled_with_callback(ECHO_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &echoInterrupt);
+    }
+
+    void triggerSensor() {
+        // Trigger the HC-SR04 by pulsing the trigger pin
+        gpio_put(TRIGGER_PIN, 1);
+        sleep_us(10);  // Pulse width must be at least 10 us
+        gpio_put(TRIGGER_PIN, 0);
+    }
+
+    void distanceTask(void *pvParameters) {
+        uint32_t distance;
+        const TickType_t xDelay = pdMS_TO_TICKS(1000);  // Trigger every 1000 ms (1 second)
+        while (1) {
+            // Trigger the sensor periodically
+            triggerSensor();
+            
+            if (xQueueReceive(distanceQueue, &distance, portMAX_DELAY)) {
+                // Process the distance or do any other task
+                printf("Distance: %.2f cm\n", distance * 0.0343 / 2); // Convert to centimeters
+            } else {
+                printf("Deu errado\n");
+            }
+            vTaskDelay(xDelay);
+        }
     }
     ```
 
-=== "C++"
 
-    ``` c++
-    #include <iostream>
+A estrutura do programa começa com a configuração dos pinos GPIO para se conectar ao sensor e a inicialização de uma fila FreeRTOS chamada `distanceQueue`. Esta fila é fundamental para armazenar os tempos de eco medidos pelo sensor.
 
-    int main(void) {
-      std::cout << "Hello world!" << std::endl;
-      return 0;
-    }
-    ```
+Uma função de interrupção, `echoInterrupt`, é configurada para lidar com eventos no pino de eco do sensor. Ela registra os tempos de início e fim do pulso de eco e envia a diferença para a fila `distanceQueue`. Essa abordagem assíncrona permite que a tarefa principal (`distanceTask`) processe os tempos de eco de maneira eficiente, sem bloqueios desnecessários.
 
-Inserir vídeo:
+A tarefa `distanceTask` é responsável por acionar periodicamente o sensor, chamando a função `triggerSensor`. Após acionar o sensor, ela aguarda a recepção dos tempos de eco na fila `distanceQueue`. Quando os dados são recebidos, a tarefa processa as informações, calcula a distância e exibe o resultado convertido em centímetros.
 
--  Abra o youtube :arrow_right: clique com botão direito no vídeo :arrow_right: copia código de incorporação:
+A fila desempenha um papel crucial no sincronismo entre a interrupção e a tarefa principal, garantindo que os dados sejam transferidos de maneira organizada e eficaz. Isso é particularmente útil em sistemas embarcados e multitarefa, onde a coordenação de eventos assíncronos é essencial.
 
-<iframe width="630" height="450" src="https://www.youtube.com/embed/UIGsSLCoIhM" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
-!!! tip
-    Eu ajusto o tamanho do vídeo `width`/`height` para não ficar gigante na página
-    
-Imagens você insere como em plain markdown, mas tem a vantagem de poder mudar as dimensões com o marcador `{width=...}`
-    
-![](icon-elementos.png)
-
-![](icon-elementos.png){width=200}
+Em resumo, o código exemplifica a utilização de filas em um contexto de medição de distância, proporcionando uma abordagem eficiente e organizada para lidar com dados assíncronos provenientes de um sensor de ultrassom em um ambiente de sistemas embarcados.
