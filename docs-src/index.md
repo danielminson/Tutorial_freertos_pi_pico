@@ -333,3 +333,19 @@ A tarefa `distanceTask` é responsável por acionar periodicamente o sensor, cha
 A fila desempenha um papel crucial no sincronismo entre a interrupção e a tarefa principal, garantindo que os dados sejam transferidos de maneira organizada e eficaz. Isso é particularmente útil em sistemas embarcados e multitarefa, onde a coordenação de eventos assíncronos é essencial.
 
 Em resumo, o código exemplifica a utilização de filas em um contexto de medição de distância, proporcionando uma abordagem eficiente e organizada para lidar com dados assíncronos provenientes de um sensor de ultrassom em um ambiente de sistemas embarcados.
+
+
+# Organização de pastas
+Pasta da infraestrutura:
+
+![](foto_c.jpeg){width=500}
+
+Pasta examples:
+
+![](foto_b.jpeg){width=500}
+
+Pasta build:
+
+![](foto_a.jpeg){width=500}
+
+
