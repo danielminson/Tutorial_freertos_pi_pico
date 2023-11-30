@@ -213,6 +213,50 @@ pico_enable_stdio_usb(hello_usb 1)
 pico_enable_stdio_uart(hello_usb 0)
 ```
 
+Para visualizar o que está sendo printado/logado, se precisa realizar o seguinte comando no terminal:
+```sudo screen /dev/ttyACM0 115200```
+
+Exemplo de código que pisca um led conectado ao pino 16 em uma task:
+
+``` c
+#include "pico/stdlib.h"
+
+#include "FreeRTOS.h"
+
+#include "task.h"
+
+const uint LED_PIN = 16; 
+
+void vBlinkTask() {
+
+for (;;) {
+
+    gpio_put(LED_PIN, 1);
+
+    vTaskDelay(250);
+
+    gpio_put(LED_PIN, 0);
+
+    vTaskDelay(250);
+
+}
+
+
+}
+
+void main() {
+
+gpio_init(LED_PIN);
+
+gpio_set_dir(LED_PIN, GPIO_OUT);
+
+xTaskCreate(vBlinkTask, "Blink Task", 128, NULL, 1, NULL);
+
+vTaskStartScheduler();
+
+}
+```
+
 
 # **Exemplo de fila no FreeRTOS - HCSR04**
 O código abaixo é um programa em C projetado para medir a distância usando um sensor de ultrassom HC-SR04 em um Raspberry Pi Pico. A aplicação utiliza o FreeRTOS, um sistema operacional em tempo real, para gerenciar tarefas concorrentes.
@@ -222,106 +266,105 @@ Esquemático:
 ![](hc-sr04_schematic.webp)
 
 Código em C:
-=== "C"
-    ``` c
-    #include <stdio.h>
-    #include <stdint.h>
-    #include "pico/stdlib.h"
-    #include "pico/time.h"
-    #include "hardware/gpio.h"
-    #include "FreeRTOS.h"
-    #include "task.h"
-    #include "queue.h"
+``` c
+#include <stdio.h>
+#include <stdint.h>
+#include "pico/stdlib.h"
+#include "pico/time.h"
+#include "hardware/gpio.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
 
-    #define TRIGGER_PIN 15
-    #define ECHO_PIN 14
+#define TRIGGER_PIN 15
+#define ECHO_PIN 14
 
-    QueueHandle_t distanceQueue;
+QueueHandle_t distanceQueue;
 
-    void echoInterrupt(uint gpio, uint32_t events);
+void echoInterrupt(uint gpio, uint32_t events);
 
-    void triggerSensor();
+void triggerSensor();
 
-    void distanceTask(void *pvParameters);
+void distanceTask(void *pvParameters);
 
-    int main() {
-        stdio_init_all();
-        sleep_ms(10000);
-        printf("Está rodando\n");
-        sleep_ms(1000);
+int main() {
+    stdio_init_all();
+    sleep_ms(10000);
+    printf("Está rodando\n");
+    sleep_ms(1000);
 
-        // Initialize HC-SR04 pins and FreeRTOS queue
-        gpio_init(TRIGGER_PIN);
-        gpio_set_dir(TRIGGER_PIN, GPIO_OUT);
-        gpio_init(ECHO_PIN);
-        gpio_set_dir(ECHO_PIN, GPIO_IN);
+    // Initialize HC-SR04 pins and FreeRTOS queue
+    gpio_init(TRIGGER_PIN);
+    gpio_set_dir(TRIGGER_PIN, GPIO_OUT);
+    gpio_init(ECHO_PIN);
+    gpio_set_dir(ECHO_PIN, GPIO_IN);
 
-        distanceQueue = xQueueCreate(5, sizeof(uint32_t));
-        if (distanceQueue == NULL) {
-            printf("Error creating queue.\n");
-            // Handle the error
+    distanceQueue = xQueueCreate(5, sizeof(uint32_t));
+    if (distanceQueue == NULL) {
+        printf("Error creating queue.\n");
+        // Handle the error
+    }
+
+    // Set up interrupt for both rising and falling edges
+    gpio_set_irq_enabled_with_callback(ECHO_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &echoInterrupt);
+
+    // Create the distance processing task
+    xTaskCreate(distanceTask, "DistanceTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
+
+    // Start FreeRTOS scheduler
+    vTaskStartScheduler();
+
+    return 0;
+}
+
+void echoInterrupt(uint gpio, uint32_t events) {
+    static uint32_t startTime;
+    static uint32_t endTime;
+
+    uint32_t time = time_us_32();
+
+    if (events & GPIO_IRQ_EDGE_RISE) {
+        startTime = time;
+        // printf("Rising Edge Interrupt\n");
+    } else if (events & GPIO_IRQ_EDGE_FALL) {
+        endTime = time;
+        // Calculate delta T
+        uint32_t deltaTime = endTime - startTime;
+
+        // Send delta T to the queue
+        xQueueSendFromISR(distanceQueue, &deltaTime, NULL);
+
+    }
+
+    // Re-enable the interrupt for both rising and falling edges
+    gpio_acknowledge_irq(ECHO_PIN, events);
+    gpio_set_irq_enabled_with_callback(ECHO_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &echoInterrupt);
+}
+
+void triggerSensor() {
+    // Trigger the HC-SR04 by pulsing the trigger pin
+    gpio_put(TRIGGER_PIN, 1);
+    sleep_us(10);  // Pulse width must be at least 10 us
+    gpio_put(TRIGGER_PIN, 0);
+}
+
+void distanceTask(void *pvParameters) {
+    uint32_t distance;
+    const TickType_t xDelay = pdMS_TO_TICKS(1000);  // Trigger every 1000 ms (1 second)
+    while (1) {
+        // Trigger the sensor periodically
+        triggerSensor();
+        
+        if (xQueueReceive(distanceQueue, &distance, portMAX_DELAY)) {
+            // Process the distance or do any other task
+            printf("Distance: %.2f cm\n", distance * 0.0343 / 2); // Convert to centimeters
+        } else {
+            printf("Deu errado\n");
         }
-
-        // Set up interrupt for both rising and falling edges
-        gpio_set_irq_enabled_with_callback(ECHO_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &echoInterrupt);
-
-        // Create the distance processing task
-        xTaskCreate(distanceTask, "DistanceTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
-
-        // Start FreeRTOS scheduler
-        vTaskStartScheduler();
-
-        return 0;
+        vTaskDelay(xDelay);
     }
-
-    void echoInterrupt(uint gpio, uint32_t events) {
-        static uint32_t startTime;
-        static uint32_t endTime;
-
-        uint32_t time = time_us_32();
-
-        if (events & GPIO_IRQ_EDGE_RISE) {
-            startTime = time;
-            // printf("Rising Edge Interrupt\n");
-        } else if (events & GPIO_IRQ_EDGE_FALL) {
-            endTime = time;
-            // Calculate delta T
-            uint32_t deltaTime = endTime - startTime;
-
-            // Send delta T to the queue
-            xQueueSendFromISR(distanceQueue, &deltaTime, NULL);
-
-        }
-
-        // Re-enable the interrupt for both rising and falling edges
-        gpio_acknowledge_irq(ECHO_PIN, events);
-        gpio_set_irq_enabled_with_callback(ECHO_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &echoInterrupt);
-    }
-
-    void triggerSensor() {
-        // Trigger the HC-SR04 by pulsing the trigger pin
-        gpio_put(TRIGGER_PIN, 1);
-        sleep_us(10);  // Pulse width must be at least 10 us
-        gpio_put(TRIGGER_PIN, 0);
-    }
-
-    void distanceTask(void *pvParameters) {
-        uint32_t distance;
-        const TickType_t xDelay = pdMS_TO_TICKS(1000);  // Trigger every 1000 ms (1 second)
-        while (1) {
-            // Trigger the sensor periodically
-            triggerSensor();
-            
-            if (xQueueReceive(distanceQueue, &distance, portMAX_DELAY)) {
-                // Process the distance or do any other task
-                printf("Distance: %.2f cm\n", distance * 0.0343 / 2); // Convert to centimeters
-            } else {
-                printf("Deu errado\n");
-            }
-            vTaskDelay(xDelay);
-        }
-    }
-    ```
+}
+```
 
 
 A estrutura do programa começa com a configuração dos pinos GPIO para se conectar ao sensor e a inicialização de uma fila FreeRTOS chamada `distanceQueue`. Esta fila é fundamental para armazenar os tempos de eco medidos pelo sensor.
