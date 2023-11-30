@@ -92,15 +92,61 @@ ou
 
 
 
-2. Rode o comando para realizar a criação de todas as pastas de compilação de exemplo: 
-`cmake ..`
+2. Rode o comando para realizar a criação de todas as pastas de compilação (desde que estejam no arquivo `CmakeLists.txt`): 
+`cmake ..` -> compila os projetos do diretorio superior na pasta atual.
 
-Agora sempre que você quiser compilar um programa, você precisa ir na sua pasta correspondente dentro da pasta “build” e ai rodar o comando “make” no terminal. Caso você altere algum arquivo CmakeList ou semelhante de algum projeto, o comando cmake precisa ser refeito. As vezes é necessário apagar todos os componentes da pasta build.
+Agora sempre que você quiser compilar um programa, você precisa ir na sua pasta correspondente dentro da pasta “build” e ai rodar o comando *“make”* no terminal. 
+
+!!! warning
+    Caso você altere algum arquivo `CmakeLists.txt` ou semelhante de algum projeto, o comando *"cmake"* precisa ser refeito na raiz da sua pasta de projetos antes de realizar comandos *"make"*. As vezes é necessário apagar todos os componentes da pasta build.
+
 
 !!! note 
-    o arquivo CMakeLists.txt na raiz da pasta de exemplos, precisa ser atualizado para adicionar pastas para serem compiladas, por exemplo com a pasta “free_rtos”:
+    o arquivo CMakeLists.txt na raiz da pasta de exemplos (ou da pasta que você tiver projetos), precisa ser atualizado para adicionar pastas para serem compiladas, por exemplo com a pasta “free_rtos”:
 
     `add_subdirectory(free_rtos)`
+
+```c
+cmake_minimum_required(VERSION 3.12)
+
+# Pull in SDK (must be before project)
+include(pico_sdk_import.cmake)
+
+include(pico_extras_import_optional.cmake)
+
+project(pico_examples C CXX ASM)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
+
+if (PICO_SDK_VERSION_STRING VERSION_LESS "1.3.0")
+    message(FATAL_ERROR "Raspberry Pi Pico SDK version 1.3.0 (or later) required. Your version is ${PICO_SDK_VERSION_STRING}")
+endif()
+
+set(PICO_EXAMPLES_PATH ${PROJECT_SOURCE_DIR})
+
+# Initialize the SDK
+pico_sdk_init()
+
+include(example_auto_set_url.cmake)
+# Add blink example
+add_subdirectory(blink)
+
+# Add hello world example
+add_subdirectory(hello_world)
+
+add_compile_options(-Wall
+        -Wno-format          # int != int32_t as far as the compiler is concerned because gcc has int32_t as long int
+        -Wno-unused-function # we have some for the docs that aren't called
+        )
+if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    add_compile_options(-Wno-maybe-uninitialized)
+endif()
+
+add_subdirectory(free_rtos_v2)
+
+```
+
+
 
 
 # **Como subir um código para a placa raspiberry pi pico?**
@@ -187,8 +233,8 @@ Código em C:
     #include "task.h"
     #include "queue.h"
 
-    #define TRIGGER_PIN 18
-    #define ECHO_PIN 19
+    #define TRIGGER_PIN 15
+    #define ECHO_PIN 14
 
     QueueHandle_t distanceQueue;
 
